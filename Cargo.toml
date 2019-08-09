@@ -1,0 +1,9 @@
+[package]
+name = "seashell"
+version = "0.1.0"
+authors = ["Valentin Daviot <valentin.daviot@alterway.fr>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
