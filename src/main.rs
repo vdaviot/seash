@@ -1,7 +1,6 @@
 use std::io::{self, Write};
 use std::env;
-use std::process::Command;
-
+use std::process;
 
 fn make_prompt() -> String {
     let username = "USERNAME";
@@ -19,10 +18,15 @@ fn make_prompt() -> String {
 
 
 fn execute_command(input: &str) {
-    let output = Command::new("sh").arg("-c").arg(input)
+    let output = process::Command::new("sh").arg("-c").arg(input)
                           .output()
                           .expect("failed to execute command");
     println!("\n{}", String::from_utf8_lossy(&output.stdout));
+}
+
+
+fn prepare_input(input: &str) -> Vec<&str> {
+    input.split(';').collect()
 }
 
 
@@ -40,11 +44,16 @@ fn main() {
             Err(_) => continue,
         }
         stdin.read_line(&mut input).expect("Failed to read user input");
-        let input: &str = input.trim();
-        if input == "exit" {
-            break;
+        let command_list = prepare_input(input.trim());
+
+        for command in command_list {
+            if command == "exit" {
+                println!("Thanks for using seash!");
+                process::exit(0x0100);
+            }
+
+            execute_command(command);
+
         }
-        execute_command(input);
     }
-    println!("Thanks for using seash!");
 }
