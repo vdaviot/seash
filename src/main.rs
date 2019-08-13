@@ -4,8 +4,9 @@ use std::fs;
 use std::path::Path;
 use std::process::{{Command, exit}};
 use colored::*;
+extern crate ctrlc;
 
-fn make_prompt() -> colored::ColoredString {
+fn make_prompt() {
     let username = "USERNAME";
     let mut prompt = String::new();
     match env::var(username) {
@@ -17,7 +18,14 @@ fn make_prompt() -> colored::ColoredString {
             prompt.push_str("$");
         }
     }
-    prompt.bold()
+    prompt.push_str("@");
+    match env::var("PWD") {
+        Ok(value) => {
+            prompt.push_str(&(value));
+        },
+        Err(_) => prompt.push_str("_"),
+    }
+    print!("{}> ", prompt.bold());
 }
 
 fn check_command_availability(binary: &str) -> bool {
@@ -57,10 +65,19 @@ fn split_multiple_commands(input: &str) -> Vec<&str> {
 
 
 fn change_directory(dir: &str) {
+    let pwd = match env::var("PWD") {
+        Ok(value) => value,
+        Err(_)    => String::new(),
+    };
     let path = Path::new(dir);
     if let Err(e) = env::set_current_dir(&path) {
         eprintln!("{}", e);
     }
+    env::set_var("OLDPWD", pwd);
+
+    let new_path = env::current_dir().unwrap();
+    let path = new_path.into_os_string().into_string().unwrap();
+    env::set_var("PWD", &path);
 }
 
 
@@ -99,12 +116,11 @@ fn split_first(cmd: &str, cmp: char) -> (&str, &str) {
 fn main() {
     let stdin = io::stdin();
     let mut input = String::new();
-
-    let prompt = make_prompt();
+    ctrlc::set_handler(move || {}).expect("error setting signal handler");
 
     loop {
         input.clear();
-        print!("{}> ", prompt);
+        make_prompt();
         match io::stdout().flush() {
             Ok(status) => status,
             Err(_) => continue,
@@ -122,5 +138,6 @@ fn main() {
                 _                        => execute_command(binary, args),
             }
         }
+
     }
 }
