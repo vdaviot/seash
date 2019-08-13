@@ -46,7 +46,7 @@ fn execute_command(binary: &str, args: &str) {
                      .expect("failed to wait on child");
 
     if !ecode.success() {
-        println!("child failed to execute command");
+        return ;
     }
 }
 
