@@ -121,17 +121,14 @@ fn main() {
     loop {
         input.clear();
         make_prompt();
-        match io::stdout().flush() {
-            Ok(status) => status,
-            Err(_) => continue,
-        }
+        io::stdout().flush().unwrap();
+
         stdin.read_line(&mut input).unwrap();
         if input.len() <= 1 {
             continue;
         }
-        let parsed_commands = split_multiple_commands(input.trim());
 
-        for command in parsed_commands {
+        for command in split_multiple_commands(input.trim()) {
             let (binary, args) = split_first(command, ' ');
             match binary {
                 "cd" | "exit" | "export" => execute_builtin(binary, args),
