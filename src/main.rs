@@ -65,11 +65,12 @@ fn split_multiple_commands(input: &str) -> Vec<&str> {
 
 
 fn change_directory(dir: &str) {
-    let pwd = match env::var("PWD") {
-        Ok(value) => value,
-        Err(_)    => String::new(),
+    let pwd = env::var("PWD").unwrap();
+    let new_path = match dir {
+        "-" => env::var("OLDPWD").unwrap(),
+        _   => String::from(dir),
     };
-    let path = Path::new(dir);
+    let path = Path::new(&new_path);
     if let Err(e) = env::set_current_dir(&path) {
         eprintln!("{}", e);
     }
